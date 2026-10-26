@@ -1,0 +1,23 @@
+# Core Data Science & Math
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.10.0
+
+# Machine Learning & Metrics
+scikit-learn>=1.3.0
+joblib>=1.3.0
+
+# Visualization & Reporting
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Configuration & Utilities
+pyyaml>=6.0
+python-dotenv>=1.0.0
+
+# Testing & Quality
+pytest>=7.4.0
+
+# Interactive Prototyping
+jupyterlab>=4.0.0
+notebook>=7.0.0
