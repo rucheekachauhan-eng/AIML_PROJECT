@@ -1,0 +1,41 @@
+{
+    "project": "Medical Insurance Cost Category Prediction",
+    "stage": 2,
+    "best_model": "Decision Tree",
+    "classes": [
+        "High",
+        "Low",
+        "Medium"
+    ],
+    "cost_thresholds": {
+        "low_range": "<= $6,250.00",
+        "medium_range": "$6,250.00 - $12,733.36",
+        "high_range": "> $12,733.36",
+        "low_cutoff_raw": 6250.0029228,
+        "high_cutoff_raw": 12733.356676711996
+    },
+    "model_performance": {
+        "Decision Tree": {
+            "accuracy": 0.9067,
+            "macro_f1": 0.9062,
+            "weighted_f1": 0.906
+        },
+        "Random Forest": {
+            "accuracy": 0.8881,
+            "macro_f1": 0.8877,
+            "weighted_f1": 0.8874
+        }
+    },
+    "expected_features": {
+        "numerical": [
+            "age",
+            "bmi",
+            "children"
+        ],
+        "categorical": [
+            "sex",
+            "smoker",
+            "region"
+        ]
+    }
+}

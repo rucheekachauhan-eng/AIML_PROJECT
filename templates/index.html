@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="College Mini Project: Medical Insurance Cost Category Prediction Using Machine Learning (Flask + Scikit-Learn)">
+    <title>MediCost AI — Medical Insurance Cost Category Prediction</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js 4.4 Library for Analytics Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+        <div class="header-container">
+            <a href="#hero" class="brand">
+                <span class="brand-icon">🏥</span>
+                <div>
+                    <h1>MediCost AI</h1>
+                    <p class="brand-tagline">Medical Insurance Cost Category Predictor</p>
+                </div>
+            </a>
+            <nav class="nav-links">
+                <a href="#predictor" class="nav-item">Predictor</a>
+                <a href="#analytics" class="nav-item">Analytics</a>
+                <a href="#how-it-works" class="nav-item">How It Works</a>
+                <a href="#model-specs" class="nav-item">Model Specs</a>
+                <a href="#history" class="nav-item">History</a>
+            </nav>
+            <div class="header-badge">
+                <span class="badge-dot pulse"></span>
+                <span>{{ model_name }} &bull; 90.7% Acc</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-container">
+
+        <!-- Hero Section -->
+        <section id="hero" class="hero-section">
+            <div class="hero-content">
+                <div class="hero-pill">
+                    <span class="pill-dot"></span> AI/ML College Mini Project
+                </div>
+                <h2>Medical Insurance Cost Category Prediction</h2>
+                <p>
+                    An end-to-end Machine Learning web application utilizing Scikit-learn to classify medical insurance expenses into 
+                    <strong>Low</strong>, <strong>Medium</strong>, and <strong>High</strong> cost brackets based on patient demographics, 
+                    BMI, and clinical risk factors—engineered strictly without data leakage.
+                </p>
+                <div class="hero-cta">
+                    <a href="#predictor" class="btn btn-hero">⚡ Launch Cost Predictor</a>
+                    <a href="#model-specs" class="btn btn-hero-secondary">📊 View Model Metrics</a>
+                </div>
+            </div>
+
+            <!-- Cost Tier Summary Badges -->
+            <div class="cost-tiers-summary">
+                <div class="tier-card tier-low">
+                    <div class="tier-icon">🟢</div>
+                    <span class="tier-label">Low Cost Tier</span>
+                    <span class="tier-range">&le; $6,250.00</span>
+                    <span class="tier-subtext">Healthy, non-smokers</span>
+                </div>
+                <div class="tier-card tier-medium">
+                    <div class="tier-icon">🟡</div>
+                    <span class="tier-label">Medium Cost Tier</span>
+                    <span class="tier-range">$6,250 - $12,733</span>
+                    <span class="tier-subtext">Moderate age / BMI risks</span>
+                </div>
+                <div class="tier-card tier-high">
+                    <div class="tier-icon">🔴</div>
+                    <span class="tier-label">High Cost Tier</span>
+                    <span class="tier-range">&gt; $12,733.36</span>
+                    <span class="tier-subtext">Smokers / Obese profiles</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Prediction Workplace (Form + Live Result) -->
+        <section id="predictor" class="workspace-section">
+            <div class="grid-layout">
+
+                <!-- Patient Profile Form -->
+                <div class="card form-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="section-icon">📋</span>
+                            <div>
+                                <h3>Patient Health Profile</h3>
+                                <p>Input patient vitals and demographic data for instant tier inference</p>
+                            </div>
+                        </div>
+                        <button type="button" id="resetFormBtn" class="btn-text" title="Reset all fields">Reset</button>
+                    </div>
+
+                    <!-- Preset Profiles Bar -->
+                    <div class="presets-bar">
+                        <span class="presets-label">⚡ Quick Presets:</span>
+                        <div class="preset-buttons">
+                            <button type="button" class="preset-chip" id="presetHealthy">Youth (Healthy)</button>
+                            <button type="button" class="preset-chip" id="presetModerate">Adult (Moderate)</button>
+                            <button type="button" class="preset-chip" id="presetHighRisk">Smoker (High Risk)</button>
+                        </div>
+                    </div>
+
+                    <form id="predictionForm" method="POST" action="/predict" novalidate>
+                        <div class="form-grid">
+
+                            <!-- Age -->
+                            <div class="form-group">
+                                <label for="age">
+                                    <span>Age of Beneficiary</span>
+                                    <span class="field-required">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <span class="input-icon">🎂</span>
+                                    <input type="number" id="age" name="age" min="18" max="100" placeholder="e.g. 35" value="32" required>
+                                </div>
+                                <span class="helper-text">Standard range: 18 – 64 years</span>
+                            </div>
+
+                            <!-- Biological Sex -->
+                            <div class="form-group">
+                                <label for="sex">
+                                    <span>Biological Sex</span>
+                                    <span class="field-required">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <span class="input-icon">👤</span>
+                                    <select id="sex" name="sex" required>
+                                        <option value="female">Female</option>
+                                        <option value="male" selected>Male</option>
+                                    </select>
+                                </div>
+                                <span class="helper-text">Policyholder demographic</span>
+                            </div>
+
+                            <!-- Body Mass Index (BMI) -->
+                            <div class="form-group">
+                                <div class="label-with-badge">
+                                    <label for="bmi">
+                                        <span>Body Mass Index (BMI)</span>
+                                        <span class="field-required">*</span>
+                                    </label>
+                                    <span id="bmiStatusBadge" class="bmi-badge bmi-normal">Normal (26.5)</span>
+                                </div>
+                                <div class="input-wrapper">
+                                    <span class="input-icon">⚖️</span>
+                                    <input type="number" id="bmi" name="bmi" step="0.1" min="10" max="60" placeholder="e.g. 26.5" value="26.5" required>
+                                </div>
+                                <div class="bmi-helper-row">
+                                    <span class="helper-text">Normal: 18.5–24.9 | Obese: &ge; 30.0</span>
+                                    <button type="button" id="toggleBmiCalcBtn" class="link-btn">BMI Calculator?</button>
+                                </div>
+
+                                <!-- Collapsible BMI Calculator -->
+                                <div id="bmiCalcDrawer" class="bmi-calc-drawer hidden">
+                                    <div class="calc-row">
+                                        <div>
+                                            <label class="calc-sublabel">Height (cm)</label>
+                                            <input type="number" id="calcHeight" placeholder="175" min="100" max="250" class="sub-input">
+                                        </div>
+                                        <div>
+                                            <label class="calc-sublabel">Weight (kg)</label>
+                                            <input type="number" id="calcWeight" placeholder="72" min="30" max="250" class="sub-input">
+                                        </div>
+                                        <button type="button" id="applyBmiBtn" class="btn btn-sm btn-accent">Apply</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Number of Children -->
+                            <div class="form-group">
+                                <label for="children">
+                                    <span>Number of Dependents</span>
+                                    <span class="field-required">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <span class="input-icon">👨‍👩‍👧</span>
+                                    <select id="children" name="children" required>
+                                        <option value="0">0 (No dependents)</option>
+                                        <option value="1" selected>1 dependent child</option>
+                                        <option value="2">2 dependent children</option>
+                                        <option value="3">3 dependent children</option>
+                                        <option value="4">4 dependent children</option>
+                                        <option value="5">5 or more children</option>
+                                    </select>
+                                </div>
+                                <span class="helper-text">Covered children on insurance</span>
+                            </div>
+
+                            <!-- Smoking Status -->
+                            <div class="form-group highlight-group">
+                                <label for="smoker">
+                                    <span>Tobacco Smoking Status</span>
+                                    <span class="field-required">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <span class="input-icon">🚬</span>
+                                    <select id="smoker" name="smoker" required>
+                                        <option value="no" selected>No (Non-smoker)</option>
+                                        <option value="yes">Yes (Regular smoker)</option>
+                                    </select>
+                                </div>
+                                <span class="helper-text warning-text">⚠️ Primary cost multiplier in healthcare</span>
+                            </div>
+
+                            <!-- US Geographic Region -->
+                            <div class="form-group">
+                                <label for="region">
+                                    <span>US Residential Region</span>
+                                    <span class="field-required">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <span class="input-icon">📍</span>
+                                    <select id="region" name="region" required>
+                                        <option value="northwest" selected>Northwest</option>
+                                        <option value="northeast">Northeast</option>
+                                        <option value="southwest">Southwest</option>
+                                        <option value="southeast">Southeast</option>
+                                    </select>
+                                </div>
+                                <span class="helper-text">Regional medical cost index</span>
+                            </div>
+
+                        </div>
+
+                        <!-- Form Submit Button -->
+                        <div class="form-actions">
+                            <button type="submit" id="submitBtn" class="btn btn-primary btn-block">
+                                <span class="btn-icon">⚡</span>
+                                <span class="btn-text-label">Predict Insurance Cost Category</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Result Card (Stateful) -->
+                <div class="card result-card" id="resultContainer">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="section-icon">🎯</span>
+                            <div>
+                                <h3>Prediction Outcome</h3>
+                                <p>Model classification and risk breakdown</p>
+                            </div>
+                        </div>
+                        <span id="liveStatusBadge" class="live-status-badge">Standby</span>
+                    </div>
+
+                    <!-- Placeholder State (Before Prediction) -->
+                    <div id="resultPlaceholder" class="result-placeholder">
+                        <div class="pulse-illustration">
+                            <div class="pulse-circle"></div>
+                            <span class="pulse-symbol">🩺</span>
+                        </div>
+                        <h4>Ready for Patient Evaluation</h4>
+                        <p>
+                            Configure the patient parameters on the left or select a preset profile, then click 
+                            <strong>"Predict Insurance Cost Category"</strong> to view real-time model analysis.
+                        </p>
+                        <div class="model-guarantee-note">
+                            🛡️ Evaluated with 90.7% accuracy &bull; Zero data leakage
+                        </div>
+                    </div>
+
+                    <!-- Active Result State (Revealed after Prediction) -->
+                    <div id="resultContent" class="result-content hidden">
+
+                        <!-- Main Prediction Banner -->
+                        <div class="outcome-banner" id="outcomeBanner">
+                            <div class="banner-top">
+                                <span class="category-pill" id="resCategory">Low Cost Tier</span>
+                                <span class="confidence-pill" id="resConfidence">94.0% Confidence</span>
+                            </div>
+                            <div class="charges-highlight">
+                                <span class="currency-label">Expected Annual Medical Charges:</span>
+                                <h4 class="charges-figure" id="resChargesRange">&le; $6,250.00</h4>
+                            </div>
+                        </div>
+
+                        <!-- Model Probability Distribution -->
+                        <div class="probabilities-wrapper">
+                            <div class="prob-header">
+                                <h5>Class Probability Distribution</h5>
+                                <span class="prob-subtext">Scikit-learn predict_proba()</span>
+                            </div>
+
+                            <!-- Low Bar -->
+                            <div class="prob-row">
+                                <div class="prob-meta">
+                                    <span class="prob-name">🟢 Low Tier (&le; $6,250)</span>
+                                    <strong id="probLowVal">0.0%</strong>
+                                </div>
+                                <div class="prob-track">
+                                    <div id="probLowBar" class="prob-fill fill-low" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Medium Bar -->
+                            <div class="prob-row">
+                                <div class="prob-meta">
+                                    <span class="prob-name">🟡 Medium Tier ($6,250–$12,733)</span>
+                                    <strong id="probMedVal">0.0%</strong>
+                                </div>
+                                <div class="prob-track">
+                                    <div id="probMedBar" class="prob-fill fill-med" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- High Bar -->
+                            <div class="prob-row">
+                                <div class="prob-meta">
+                                    <span class="prob-name">🔴 High Tier (&gt; $12,733)</span>
+                                    <strong id="probHighVal">0.0%</strong>
+                                </div>
+                                <div class="prob-track">
+                                    <div id="probHighBar" class="prob-fill fill-high" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Clinical Insights Card -->
+                        <div class="insights-card" id="insightsCard">
+                            <h5>Clinical & Demographic Assessment</h5>
+                            <p id="resSummaryText" class="insight-summary-text"></p>
+                            <div class="risk-factors-container">
+                                <span class="risk-label">Identified Health Factors:</span>
+                                <ul id="resRiskList" class="risk-tags-list"></ul>
+                            </div>
+                            <div class="recommendation-box">
+                                <span class="rec-icon">💡</span>
+                                <div>
+                                    <strong>Clinical Guidance:</strong>
+                                    <p id="resRecText" class="rec-text"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Post-Prediction Actions -->
+                        <div class="result-actions">
+                            <button type="button" id="printReportBtn" class="btn btn-sm btn-outline">🖨️ Print Summary</button>
+                            <button type="button" id="newPredBtn" class="btn btn-sm btn-secondary">New Assessment</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- "How It Works" Section -->
+        <section id="how-it-works" class="section-block">
+            <div class="section-heading">
+                <h3>How The Machine Learning System Works</h3>
+                <p>Four-stage pipeline from raw demographic data to calibrated cost tier prediction</p>
+            </div>
+
+            <div class="workflow-grid">
+                <div class="workflow-card">
+                    <div class="step-num">01</div>
+                    <h4>Patient Input & Validation</h4>
+                    <p>Captures continuous and categorical indicators: age, BMI, smoker status, children, and region, validated against clinical boundaries.</p>
+                </div>
+                <div class="workflow-card">
+                    <div class="step-num">02</div>
+                    <h4>ColumnTransformer Pipeline</h4>
+                    <p>Standardizes numerical variables with <code>StandardScaler</code> and one-hot encodes categoricals via <code>OneHotEncoder</code> to prevent leakage.</p>
+                </div>
+                <div class="workflow-card">
+                    <div class="step-num">03</div>
+                    <h4>Decision Tree Classification</h4>
+                    <p>Evaluates non-linear feature interactions (such as the exponential risk of high BMI combined with smoking) at 90.7% accuracy.</p>
+                </div>
+                <div class="workflow-card">
+                    <div class="step-num">04</div>
+                    <h4>Tier Mapping & Logging</h4>
+                    <p>Stratifies the output into Low, Medium, or High dollar brackets, generates risk insights, and persists records in SQLite for analysis.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Model Specifications Section -->
+        <section id="model-specs" class="section-block">
+            <div class="section-heading">
+                <h3>Model Architecture & Performance Benchmark</h3>
+                <p>Evaluated on 20% unseen test partition (268 unique test samples)</p>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <span class="metric-value">90.67%</span>
+                    <span class="metric-title">Test Accuracy</span>
+                    <span class="metric-sub">Outperforms Random Forest (88.81%)</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-value">90.62%</span>
+                    <span class="metric-title">Macro F1-Score</span>
+                    <span class="metric-sub">Balanced across all 3 tiers</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-value">1,338</span>
+                    <span class="metric-title">Dataset Size</span>
+                    <span class="metric-sub">Medical Cost Personal Dataset</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-value">Zero</span>
+                    <span class="metric-title">Data Leakage</span>
+                    <span class="metric-sub">Quantiles derived strictly on train set</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Dashboard Section (Chart.js + SQLite Telemetry) -->
+        <section id="analytics" class="section-block">
+            <div class="section-heading">
+                <div class="hero-pill">
+                    <span class="pill-dot"></span> Stage 5 Analytics Dashboard
+                </div>
+                <h3>Patient Population Analytics & Telemetry</h3>
+                <p>Interactive visualizations generated dynamically from persistent SQLite audit database records</p>
+            </div>
+
+            <!-- KPI Cards Row -->
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <span class="kpi-icon">📋</span>
+                    <div>
+                        <span class="kpi-num" id="kpiTotal">0</span>
+                        <span class="kpi-label">Total Predictions Logged</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-icon">🎯</span>
+                    <div>
+                        <span class="kpi-num" id="kpiAvgConf">0.0%</span>
+                        <span class="kpi-label">Average Confidence</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-icon">🎂</span>
+                    <div>
+                        <span class="kpi-num" id="kpiAvgAge">0.0</span>
+                        <span class="kpi-label">Average Patient Age</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-icon">🚬</span>
+                    <div>
+                        <span class="kpi-num" id="kpiSmokers">0</span>
+                        <span class="kpi-label">Active Smokers Assessed</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Controls -->
+            <div class="analytics-toolbar">
+                <span class="toolbar-title">📊 Live Assessment Charts:</span>
+                <div class="toolbar-actions">
+                    <button id="refreshAnalyticsBtn" class="btn btn-sm btn-outline">🔄 Refresh Analytics</button>
+                    <button id="clearHistoryBtn" class="btn btn-sm btn-outline text-danger">🗑️ Reset Demo Records</button>
+                </div>
+            </div>
+
+            <!-- Chart.js 2x2 Grid -->
+            <div class="charts-grid">
+                <!-- Chart 1: Cost Tier Distribution -->
+                <div class="card chart-card">
+                    <div class="chart-header">
+                        <h4>Predicted Cost Tier Distribution</h4>
+                        <span class="chart-tag">Doughnut</span>
+                    </div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="chartCategoryDist"></canvas>
+                    </div>
+                    <p class="chart-footnote">Proportion of patients falling into Low, Medium, or High expense tiers.</p>
+                </div>
+
+                <!-- Chart 2: Smoking Impact by Cost Tier -->
+                <div class="card chart-card">
+                    <div class="chart-header">
+                        <h4>Smoking Impact on Cost Tier</h4>
+                        <span class="chart-tag">Grouped Bar</span>
+                    </div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="chartSmokerCross"></canvas>
+                    </div>
+                    <p class="chart-footnote">Direct correlation between active smoking and elevated insurance tier.</p>
+                </div>
+
+                <!-- Chart 3: BMI Health Classification -->
+                <div class="card chart-card">
+                    <div class="chart-header">
+                        <h4>Patient BMI Classification</h4>
+                        <span class="chart-tag">Polar Area</span>
+                    </div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="chartBmiDist"></canvas>
+                    </div>
+                    <p class="chart-footnote">Clinical weight distribution across evaluated cohort.</p>
+                </div>
+
+                <!-- Chart 4: Confidence Score Telemetry -->
+                <div class="card chart-card">
+                    <div class="chart-header">
+                        <h4>Model Confidence Score Telemetry</h4>
+                        <span class="chart-tag">Line Trend</span>
+                    </div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="chartTimeline"></canvas>
+                    </div>
+                    <p class="chart-footnote">Sequential classification certainty across recent assessments.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Prediction History Table Section -->
+        <section id="history" class="section-block">
+            <div class="card history-card">
+                <div class="card-header flex-header">
+                    <div class="card-title-group">
+                        <span class="section-icon">🗄️</span>
+                        <div>
+                            <h3>Persistent Prediction History (SQLite)</h3>
+                            <p>Real-time audit log stored persistently in <code>database/predictions.db</code></p>
+                        </div>
+                    </div>
+                    <div class="history-controls">
+                        <input type="text" id="historySearch" placeholder="Filter by category or smoker..." class="search-input">
+                        <button id="refreshHistoryBtn" class="btn btn-sm btn-outline">🔄 Refresh</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Age</th>
+                                <th>Sex</th>
+                                <th>BMI</th>
+                                <th>Children</th>
+                                <th>Smoker</th>
+                                <th>Region</th>
+                                <th>Predicted Tier</th>
+                                <th>Confidence</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <tr>
+                                <td colspan="9" class="text-center text-muted">Loading prediction audit log...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <span class="brand-icon">🏥</span>
+                <span><strong>MediCost AI</strong> &bull; Medical Insurance Cost Category Prediction</span>
+            </div>
+            <p class="footer-note">
+                AI/ML College Mini Project &bull; Built with Flask, Scikit-learn, Vanilla CSS & JavaScript &bull; Third Year CSE AI/ML
+            </p>
+        </div>
+    </footer>
+
+    <!-- Frontend Script Controller -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
